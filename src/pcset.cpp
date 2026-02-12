@@ -22,8 +22,11 @@ const Pcset EmptyPcset = {
     "", true, 0, "000000000000", "000000000000", {}
 };
 
-// Cache for computed pcsets
-static std::unordered_map<std::string, Pcset> pcsetCache = { {EmptyPcset.chroma, EmptyPcset} };
+// Cache for computed pcsets (function-local static to avoid SIOF)
+static std::unordered_map<std::string, Pcset>& pcsetCache() {
+    static std::unordered_map<std::string, Pcset> cache = { {EmptyPcset.chroma, EmptyPcset} };
+    return cache;
+}
 
 // Regex for validating chromas
 const std::regex CHROMA_REGEX("^[01]{12}$");
@@ -169,12 +172,12 @@ Pcset chromaToPcset(const std::string& chroma) {
 Pcset getPcset(const std::string& src) {
     // Check if it's a chroma
     if (isChroma(src)) {
-        if (pcsetCache.find(src) != pcsetCache.end()) {
-            return pcsetCache[src];
+        if (pcsetCache().find(src) != pcsetCache().end()) {
+            return pcsetCache()[src];
         }
         
         Pcset pcset = chromaToPcset(src);
-        pcsetCache[src] = pcset;
+        pcsetCache()[src] = pcset;
         return pcset;
     }
     

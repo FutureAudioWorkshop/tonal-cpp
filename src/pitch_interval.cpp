@@ -39,8 +39,11 @@ std::string intervalFillStr(const std::string& s, int n) {
     return result;
 }
 
-// Cache for interval objects to improve performance
-static std::unordered_map<std::string, Interval> intervalCache;
+// Cache for interval objects to improve performance (function-local static to avoid SIOF)
+static std::unordered_map<std::string, Interval>& intervalCache() {
+    static std::unordered_map<std::string, Interval> cache;
+    return cache;
+}
 
 // Arrays and constants - match TypeScript implementation
 const std::vector<int> SIZES = {0, 2, 4, 5, 7, 9, 11};
@@ -246,8 +249,8 @@ Interval interval(const std::string& src, bool useCache) {
     }
     
     // Check cache first
-    if (useCache && intervalCache.find(src) != intervalCache.end()) {
-        return intervalCache[src];
+    if (useCache && intervalCache().find(src) != intervalCache().end()) {
+        return intervalCache()[src];
     }
     
     // Parse string - using renamed function
@@ -255,7 +258,7 @@ Interval interval(const std::string& src, bool useCache) {
     
     // Cache result if valid
     if (useCache && !result.empty) {
-        intervalCache[src] = result;
+        intervalCache()[src] = result;
     }
     
     return result;

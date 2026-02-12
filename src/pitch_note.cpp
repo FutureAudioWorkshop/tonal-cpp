@@ -30,8 +30,11 @@ const Note NoNote = []() {
     return n;
 }();
 
-// Cache for parsed notes for performance
-static std::map<std::string, Note> noteCache;
+// Cache for parsed notes for performance (function-local static to avoid SIOF)
+static std::map<std::string, Note>& noteCache() {
+    static std::map<std::string, Note> cache;
+    return cache;
+}
 
 // Helper function to fill a string with repeated characters
 std::string fillStr(const std::string& s, int n) {
@@ -189,12 +192,12 @@ Note coordToNote(const pitch::PitchCoordinates& coord) {
 // Main note function implementations
 Note note(const std::string& src) {
     // Check cache first
-    if (noteCache.find(src) != noteCache.end()) {
-        return noteCache[src];
+    if (noteCache().find(src) != noteCache().end()) {
+        return noteCache()[src];
     }
-    
+
     Note result = parse(src);
-    noteCache[src] = result;
+    noteCache()[src] = result;
     return result;
 }
 
