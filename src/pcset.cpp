@@ -17,14 +17,15 @@ const std::vector<std::string> INTERVALS = {
     "1P", "2m", "2M", "3m", "3M", "4P", "5d", "5P", "6m", "6M", "7m", "7M"
 };
 
-// Empty Pcset definition
-const Pcset EmptyPcset = {
-    "", true, 0, "000000000000", "000000000000", {}
-};
+// Get the empty Pcset singleton (function-local static to avoid SIOF)
+const Pcset& getEmptyPcset() {
+    static const Pcset instance = { "", true, 0, "000000000000", "000000000000", {} };
+    return instance;
+}
 
 // Cache for computed pcsets (function-local static to avoid SIOF)
-static std::unordered_map<std::string, Pcset>& pcsetCache() {
-    static std::unordered_map<std::string, Pcset> cache = { {EmptyPcset.chroma, EmptyPcset} };
+static std::unordered_map<std::string, Pcset>& getPcsetCache() {
+    static std::unordered_map<std::string, Pcset> cache = { {getEmptyPcset().chroma, getEmptyPcset()} };
     return cache;
 }
 
@@ -81,7 +82,7 @@ std::vector<std::string> chromaRotations(const std::string& chroma) {
 // Convert a list of notes or intervals to a chroma
 std::string listToChroma(const std::vector<std::string>& list) {
     if (list.empty()) {
-        return EmptyPcset.chroma;
+        return getEmptyPcset().chroma;
     }
     
     // Use a 12-bit array initialized to zeros
@@ -113,7 +114,7 @@ std::string listToChroma(const std::vector<std::string>& list) {
     }
     
     if (!valid) {
-        return EmptyPcset.chroma;
+        return getEmptyPcset().chroma;
     }
     
     // Convert binary to string
@@ -172,17 +173,17 @@ Pcset chromaToPcset(const std::string& chroma) {
 Pcset getPcset(const std::string& src) {
     // Check if it's a chroma
     if (isChroma(src)) {
-        if (pcsetCache().find(src) != pcsetCache().end()) {
-            return pcsetCache()[src];
+        if (getPcsetCache().find(src) != getPcsetCache().end()) {
+            return getPcsetCache()[src];
         }
         
         Pcset pcset = chromaToPcset(src);
-        pcsetCache()[src] = pcset;
+        getPcsetCache()[src] = pcset;
         return pcset;
     }
     
-    // If not a chroma, treat as EmptyPcset
-    return EmptyPcset;
+    // If not a chroma, treat as getEmptyPcset()
+    return getEmptyPcset();
 }
 
 Pcset getPcset(int src) {
@@ -190,7 +191,7 @@ Pcset getPcset(int src) {
         std::string chroma = setNumToChroma(src);
         return getPcset(chroma);
     }
-    return EmptyPcset;
+    return getEmptyPcset();
 }
 
 Pcset getPcset(const std::vector<std::string>& src) {
@@ -202,7 +203,7 @@ Pcset getPcset(const Pcset& pcset) {
     if (isPcset(pcset)) {
         return pcset;
     }
-    return EmptyPcset;
+    return getEmptyPcset();
 }
 
 // Interval implementations

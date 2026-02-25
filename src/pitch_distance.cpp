@@ -12,7 +12,7 @@ namespace pitch_distance {
  */
 pitch_interval::Interval coordToIntervalObj(const pitch::PitchCoordinates& coord, bool forceDescending = false) {
     if (coord.empty()) {
-        return pitch_interval::NoInterval;
+        return pitch_interval::getNoInterval();
     }
     
     int fifths = coord[0];

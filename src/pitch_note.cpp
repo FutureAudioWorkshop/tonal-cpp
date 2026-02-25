@@ -12,26 +12,29 @@ namespace pitch_note {
 // Constants
 const std::array<int, 7> SEMI = {0, 2, 4, 5, 7, 9, 11};
 
-// Create the NoNote singleton
-const Note NoNote = []() {
-    Note n;
-    n.empty = true;
-    n.name = "";
-    n.letter = "";
-    n.acc = "";
-    n.pc = "";
-    n.step = std::numeric_limits<int>::quiet_NaN();
-    n.alt = std::numeric_limits<int>::quiet_NaN();
-    n.chroma = std::numeric_limits<int>::quiet_NaN();
-    n.height = std::numeric_limits<int>::quiet_NaN();
-    n.coord = {};
-    n.midi = std::nullopt;
-    n.freq = std::nullopt;
-    return n;
-}();
+// Create the NoNote singleton (function-local static to avoid SIOF)
+const Note& getNoNote() {
+    static const Note instance = []() {
+        Note n;
+        n.empty = true;
+        n.name = "";
+        n.letter = "";
+        n.acc = "";
+        n.pc = "";
+        n.step = std::numeric_limits<int>::quiet_NaN();
+        n.alt = std::numeric_limits<int>::quiet_NaN();
+        n.chroma = std::numeric_limits<int>::quiet_NaN();
+        n.height = std::numeric_limits<int>::quiet_NaN();
+        n.coord = {};
+        n.midi = std::nullopt;
+        n.freq = std::nullopt;
+        return n;
+    }();
+    return instance;
+}
 
 // Cache for parsed notes for performance (function-local static to avoid SIOF)
-static std::map<std::string, Note>& noteCache() {
+static std::map<std::string, Note>& getNoteCache() {
     static std::map<std::string, Note> cache;
     return cache;
 }
@@ -108,7 +111,7 @@ Note parse(const std::string& noteName) {
     
     // Return NoNote if parsing failed or has remainder
     if (letter.empty() || !remainder.empty()) {
-        return NoNote;
+        return getNoNote();
     }
     
     // Calculate step: Use ASCII offset
@@ -192,12 +195,13 @@ Note coordToNote(const pitch::PitchCoordinates& coord) {
 // Main note function implementations
 Note note(const std::string& src) {
     // Check cache first
-    if (noteCache().find(src) != noteCache().end()) {
-        return noteCache()[src];
+    auto& cache = getNoteCache();
+    if (cache.find(src) != cache.end()) {
+        return cache[src];
     }
 
     Note result = parse(src);
-    noteCache()[src] = result;
+    cache[src] = result;
     return result;
 }
 

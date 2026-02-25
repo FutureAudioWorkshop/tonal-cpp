@@ -39,8 +39,8 @@ std::string intervalFillStr(const std::string& s, int n) {
     return result;
 }
 
-// Cache for interval objects to improve performance (function-local static to avoid SIOF)
-static std::unordered_map<std::string, Interval>& intervalCache() {
+// Cache for interval objects (function-local static to avoid SIOF)
+static std::unordered_map<std::string, Interval>& getIntervalCache() {
     static std::unordered_map<std::string, Interval> cache;
     return cache;
 }
@@ -49,8 +49,11 @@ static std::unordered_map<std::string, Interval>& intervalCache() {
 const std::vector<int> SIZES = {0, 2, 4, 5, 7, 9, 11};
 const std::string TYPES = "PMMPPMM";
 
-// Define NoInterval - exactly like in TypeScript
-const Interval NoInterval = Interval();
+// Get the NoInterval singleton (function-local static to avoid SIOF)
+const Interval& getNoInterval() {
+    static const Interval instance;
+    return instance;
+}
 
 // Default constructor implementation
 Interval::Interval()
@@ -98,7 +101,7 @@ std::pair<std::string, std::string> tokenizeInterval(const std::string& str) {
 Interval parseInterval(const std::string& str) {
     auto [numStr, qStr] = tokenizeInterval(str);
     if (numStr.empty()) {
-        return NoInterval;
+        return getNoInterval();
     }
 
     int num = std::stoi(numStr);
@@ -108,7 +111,7 @@ Interval parseInterval(const std::string& str) {
     
     // Validate for majorable intervals with perfect quality
     if (typeChar == 'M' && q == "P") {
-        return NoInterval;
+        return getNoInterval();
     }
     
     IntervalType type = (typeChar == 'M') ? IntervalType::Majorable : IntervalType::Perfectable;
@@ -213,7 +216,7 @@ std::string intervalPitchName(const pitch::Pitch& props) {
 Interval coordToInterval(const pitch::PitchCoordinates& coord, bool forceDescending) {
     // Check for minimum required coordinates
     if (coord.empty()) {
-        return NoInterval;
+        return getNoInterval();
     }
     
     // Extract the fifths and octaves from coordinates - match TypeScript implementation
@@ -245,12 +248,12 @@ Interval coordToInterval(const pitch::PitchCoordinates& coord, bool forceDescend
 // Main interval function with caching
 Interval interval(const std::string& src, bool useCache) {
     if (src.empty()) {
-        return NoInterval;
+        return getNoInterval();
     }
     
     // Check cache first
-    if (useCache && intervalCache().find(src) != intervalCache().end()) {
-        return intervalCache()[src];
+    if (useCache && getIntervalCache().find(src) != getIntervalCache().end()) {
+        return getIntervalCache()[src];
     }
     
     // Parse string - using renamed function
@@ -258,7 +261,7 @@ Interval interval(const std::string& src, bool useCache) {
     
     // Cache result if valid
     if (useCache && !result.empty) {
-        intervalCache()[src] = result;
+        getIntervalCache()[src] = result;
     }
     
     return result;

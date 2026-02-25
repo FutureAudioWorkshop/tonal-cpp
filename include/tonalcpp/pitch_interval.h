@@ -49,9 +49,9 @@ struct Interval : public pitch::Pitch {
 };
 
 /**
- * Invalid interval constant
+ * Get the invalid interval singleton (lazy init to avoid SIOF)
  */
-extern const Interval NoInterval;
+const Interval& getNoInterval();
 
 /**
  * Parse a string to an interval

@@ -32,8 +32,8 @@ struct Note : public pitch::Pitch {
              chroma(0), height(0), coord({}), midi(std::nullopt), freq(std::nullopt) {}
 };
 
-// Create an empty note singleton
-extern const Note NoNote;
+// Get the empty note singleton (lazy init to avoid SIOF)
+const Note& getNoNote();
 
 /**
  * Parse a note name string to get letter, accidental, and octave

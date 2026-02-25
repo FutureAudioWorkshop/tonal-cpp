@@ -25,8 +25,8 @@ struct Pcset {
 using PcsetChroma = std::string;
 using PcsetNum = int;
 
-// Empty Pcset constant
-extern const Pcset EmptyPcset;
+// Get the empty Pcset singleton (lazy init to avoid SIOF)
+const Pcset& getEmptyPcset();
 
 /**
  * Checks if a string is a valid pitch class set chroma
